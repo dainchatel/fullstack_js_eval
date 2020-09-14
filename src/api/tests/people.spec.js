@@ -7,13 +7,17 @@ function hasPersonKeys (res) {
   const keys = ['first_name', 'last_name', 'company', 'created_at', 'id', 'title']
   keys.map(key => { if (!res.body[key]) throw new Error(`Response missing ${key}`) })
 }
+function hasAddressKeys (res) {
+  const keys = ['line1', 'line2', 'city', 'state', 'zip', 'created_at', 'id', 'person_id']
+  keys.map(key => { if (!res.body[key]) throw new Error(`Response missing ${key}`) })
+}
 
 describe('People API', () => {
   it('POST /v1/people should create a new person', async () => {
     await client
       .post('/v1/people')
       .send(fixtures.firstPerson)
-      .expect(httpStatusCodes.OK)
+      .expect(httpStatusCodes.Created)
       .expect(hasPersonKeys)
       .then(resp => {
         fixtures.firstPerson = resp.body
@@ -50,10 +54,29 @@ describe('People API', () => {
    * ======================================================
    */
 
-  it('POST /v1/people/:personID/addresses should create a new address')
-  it('GET /v1/people/:personID/addresses/:addressID should return an address by its id and its person_id')
-  it('GET /v1/people/:personID/addresses should return a list of addresses belonging to the person by that id')
+  it('POST /v1/people/:personID/addresses should create a new address', async () => {
 
-  // BONUS!!!
-  it('DELETE /v1/people/:personID/addresses/:addressID should delete an address by its id (BONUS)')
+    await client
+      .post(`/v1/people/${fixtures.firstPerson.id}/addresses`)
+      .send(fixtures.firstAddress)
+      .expect(httpStatusCodes.OK)
+      .then(resp => {
+        fixtures.firstAddress = resp.body
+      })
+  })
+
+  it('GET /v1/people/:personID/addresses/:addressID should return an address by its id and its person_id', async () => {
+    await client
+      .get(`/v1/people/${fixtures.firstPerson.id}/addresses/${fixtures.firstAddress.id}`)
+      .expect(hasAddressKeys)
+      .then(resp => {
+        fixtures.firstAddress = resp.body
+      })
+  })
+  it('GET /v1/people/:personID/addresses should return a list of addresses belonging to the person by that id', async () => {
+    
+  })
+
+  // // BONUS!!!
+  // it('DELETE /v1/people/:personID/addresses/:addressID should delete an address by its id (BONUS)')
 })
